@@ -6,12 +6,12 @@
 
    Stack Class: used for displaying shell command history
  */
-#ifndef UNTITLED1_STACK_H
-#define UNTITLED1_STACK_H
+#ifndef HARP_SHELL_STACK_H
+#define HARP_SHELL_STACK_H
+
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "common.h"
 
 typedef struct stackNode stackNode;
 typedef struct stack stack;
@@ -19,6 +19,7 @@ typedef struct stack stack;
 struct stackNode{
     stackNode *next;
     char *command;
+    char *args[MAX_ARGUMENTS];
 };
 
 struct stack{
@@ -90,4 +91,4 @@ void print(stack *s){
     }
 }
 
-#endif //UNTITLED1_STACK_H
+#endif //HARP_SHELL_STACK_H

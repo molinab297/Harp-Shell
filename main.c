@@ -4,15 +4,8 @@
    Class: CPSC-351 Section 2
    Date: 19 September, 2017
  */
-#include <sys/types.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <memory.h>
-#include <stdlib.h>
+#include "common.h"
 #include "stack.h"
-
-#define MAX_ARGUMENTS 3
-#define BUFFER_SIZE 25
 
 /*
 Function ReadUserInput
@@ -70,7 +63,7 @@ int main(){
     initializeStack(historyStack);
 
     while (1) {
-        printf("osh>");
+        printf("harp>");
         fflush(stdout);
 
         /* Reads from stdin and stores result in args */
@@ -79,7 +72,7 @@ int main(){
         /* If user enters exit, terminate program */
         if(strcmp(args[0],"exit") == 0) break;
         else if(strcmp(args[0], "history") == 0) print(historyStack);
-        else if(args[0], "!!"){
+        else if(strcmp(args[0], "!!") == 0){
             // execute last command
             if(!isEmpty(historyStack)){
 
@@ -87,7 +80,7 @@ int main(){
                 fprintf(stderr, "No commands in history");
             }
         }
-        else if(args[0], "!n"){
+        else if(strcmp(args[0], "!n") == 0){
             // execute the nth command
             if(!isEmpty(historyStack)){
 
