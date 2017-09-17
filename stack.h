@@ -1,10 +1,10 @@
 /* Author: Blake Molina
-   Assignment: Project 3 - UNIX Shell & History Feature
-   CWID: 890198401
-   Class: CPSC-351 Section 2
-   Date: 19 September, 2017
-
-   Stack Class: used for displaying shell command history
+ *  Assignment: Project 3 - UNIX Shell & History Feature
+ *  CWID: 890198401
+ *  Class: CPSC-351 Section 2
+ *  Date: 19 September, 2017
+ *
+ *  Stack Class: used for displaying shell command history
  */
 #ifndef HARP_SHELL_STACK_H
 #define HARP_SHELL_STACK_H
@@ -18,7 +18,6 @@ typedef struct stack stack;
 
 struct stackNode{
     stackNode *next;
-    char *command;
     char *args[MAX_ARGUMENTS];
 };
 
@@ -40,19 +39,26 @@ void initializeStack(stack *s){
     }
 }
 
-stackNode * newStackNode(const char *str){
+stackNode * newStackNode(char *args[]){
     stackNode *newNode = (stackNode*)malloc(sizeof(stackNode));
-    newNode->command = (char*)malloc(strlen(str)*sizeof(char));
-    strcpy(newNode->command, str);
+    /* Initialize args array of stack node to NULL */
+    for(int i = 0; i < MAX_ARGUMENTS; i++) newNode->args[i] = NULL;
+    /* Copy each command into the stack nodes command array */
+    for(int i = 0; i < MAX_ARGUMENTS; i++){
+        if(args[i] != NULL){
+            newNode->args[i] = (char*)malloc(strlen(args[i])*sizeof(char));
+            strcpy(newNode->args[i], args[i]);
+        }
+    }
     newNode->next = NULL;
     return newNode;
 }
 
-void push(stack *s, const char *str){
+void push(stack *s, char *args[]){
     if(isEmpty(s))
-        s->head = newStackNode(str);
+        s->head = newStackNode(args);
     else{
-        stackNode *temp = newStackNode(str);
+        stackNode *temp = newStackNode(args);
         temp->next = s->head;
         s->head = temp;
     }
@@ -62,9 +68,12 @@ void push(stack *s, const char *str){
 void pop(stack *s){
     if(isEmpty(s)) return;
     stackNode *delNode = s->head;
+    for(int i = 0; i < MAX_ARGUMENTS; i++){
+        if(s->head->args[i] != NULL)
+            free(s->head->args[i]);
+    }
     s->head = s->head->next;
     delNode->next = NULL;
-    free(delNode->command);
     free(delNode);
     --s->numNodes;
 }
@@ -85,7 +94,11 @@ void print(stack *s){
     stackNode *curr = s->head;
     size_t count = s->numNodes;
     while(curr){
-        printf("%zu %s\n", count, curr->command);
+        printf("%zu ", count);
+        for(int i = 0; i < MAX_ARGUMENTS; i++) {
+            if (curr->args[i] != NULL)
+                printf("%s ", curr->args[i]);
+        } printf("\n");
         --count;
         curr = curr->next;
     }
