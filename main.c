@@ -8,47 +8,52 @@
 #include "stack.h"
 
 /* -----------------------------------------------------------------------------
- * Function ReadUserInput
+ * Function parseUserInput
  *
  * Summary : Fills the args array with arguments input by the user
- * Input   : A pointer to an array of strings
+ * Input   : input - A char array (input string)
+ *           args  - A pointer to an array of strings (arguments)
+ *           delimiters - The string of delimiters on which input will be split
  * Returns : None
 */
-void parseUserInput(char input[], char **args){
+void split(char input[], char **args, char *delimiters){
     int index = 0;
-    /* Split string based on spaces and newline characters */
-    for (char *p = strtok(input," \n"); p != NULL; p = strtok(NULL, " \n")) {
-        char *token = strdup(p); /* Store returned value from strtok() */
+    /* Split string on every space/newline character */
+    for (char *p = strtok(input,delimiters); p != NULL; p = strtok(NULL,delimiters)) {
+        /* Store returned value from strtok() into argument array */
+        char *token = strdup(p);
         args[index] = token;
         ++index;
     }
 }
 
 /*  -----------------------------------------------------------------------------
- *  Function Execute
+ *  Function execute
  *
  *   Summary : Forks a child process to execute a command given by the user
  *   Input   : An array of pointers to strings
  *   Returns : None
  */
 void execute(char **args){
-    pid_t pid;
+    pid_t child_pid;
+    int child_status;
 
     /* Fork child process */
-    pid = fork();
+    child_pid = fork();
 
-    if (pid < 0) { /* error occurred */
+    if (child_pid < 0) { /* error occurred */
         fprintf(stderr, "Fork Failed");
         exit(1);
     }
 
-    if (pid == 0) { /* child process */
+    if (child_pid == 0) { /* child process */
         if(execvp(args[0], args) < 0){
             fprintf(stderr, "Error - command doesn't exist or failed to execute\n");
             exit(1);
         }
     }
     else{ /* parent process */
+        /* wait for child process to finish */
         wait(NULL);
     }
 }
@@ -100,15 +105,17 @@ int main(){
 
     /* User exits shell by typing 'exit' */
     while (1) {
-        printf("harp>");
-        fflush(stdout);
 
         /* Reads user input from stdin */
         char input[BUFFER_SIZE];
-        fgets(input, BUFFER_SIZE, stdin);
+        do{
+            printf("osh>");
+            fflush(stdout);
+            fgets(input, BUFFER_SIZE, stdin);
+        } while(input[0] == '\n');
 
         /* Parse user input and store arguments in args array */
-        parseUserInput(input, args);
+        split(input, args, " \n");
 
         /* If user enters exit, terminate program */
         if(strcmp(args[0],"exit") == 0) break;
@@ -116,7 +123,7 @@ int main(){
             print(historyStack);
             push(historyStack, args);
         }
-            /* Executes !! or !# commands */
+        /* Executes !! or !# commands */
         else if(strstr(args[0], "!") != NULL && strlen(args[0]) <= 2){
             if(!isEmpty(historyStack)) {
                 /* execute last command */
@@ -124,25 +131,26 @@ int main(){
                     execute(historyStack->head->args);
                     push(historyStack, historyStack->head->args);
                 }
-                /* execute Nth command */
+                /* execute the Nth command */
                 else {
                     char **nthCommand = getNthCommand(historyStack, args[0][1] - '0');
                     execute(nthCommand);
                     push(historyStack, nthCommand);
                 }
-            } else{
-                fprintf(stderr, "Command doesn't exist in history\n");
-            }
+            } else fprintf(stderr, "Command doesn't exist in history\n");
         }
+        /* Clears the history stack */
         else if(strcmp(args[0], "clear") == 0) {
             popAll(historyStack);
             push(historyStack, args);
         }
+        /* Execute command normally */
         else{
-            execute(args);  /* Run command */
+            execute(args);
             push(historyStack, args);
         }
 
+        /* Clears argument array for next user input */
         clearArgumentAr(args);
     }
 
