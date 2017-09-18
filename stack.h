@@ -129,7 +129,12 @@ void freeStack(stack **s){
  *  Function print
  *
  *   Summary : prints the contents of a stack object. Contents in this context
- *             means the stack nodes id number and the array of command arguments
+ *             means the stack nodes id number and the array of command arguments.
+ *             i.e. :
+ *                 3 history
+ *                 2 ls -l
+ *                 1 ps -ael
+ *
  *   Input   : s - a pointer to a stack object
  *   Returns : none
  */

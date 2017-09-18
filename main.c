@@ -11,9 +11,9 @@
  * Function parseUserInput
  *
  * Summary : Fills the args array with arguments input by the user
- * Input   : input - A char array (input string)
- *           args  - A pointer to an array of strings (arguments)
- *           delimiters - The string of delimiters on which input will be split
+ * Input   : input - a char array (input string)
+ *           args  - a pointer to an array of strings (arguments)
+ *           delimiters - the string of delimiters on which input will be split
  * Returns : None
 */
 void split(char input[], char **args, char *delimiters){
@@ -31,12 +31,13 @@ void split(char input[], char **args, char *delimiters){
  *  Function execute
  *
  *   Summary : Forks a child process to execute a command given by the user
- *   Input   : An array of pointers to strings
+ *   Input   : args - an array of pointers to strings (the command arguments)
+ *             background_flag - indicates whether to the run the command as a
+ *             background process or not
  *   Returns : None
  */
-void execute(char **args){
+void execute(char **args, int background_flag){
     pid_t child_pid;
-    int child_status;
 
     /* Fork child process */
     child_pid = fork();
@@ -48,13 +49,13 @@ void execute(char **args){
 
     if (child_pid == 0) { /* child process */
         if(execvp(args[0], args) < 0){
-            fprintf(stderr, "Error - command doesn't exist or failed to execute\n");
+            fprintf(stderr, "Error - command failed to execute\n");
             exit(1);
         }
     }
     else{ /* parent process */
         /* wait for child process to finish */
-        wait(NULL);
+        if(background_flag == 0) wait(NULL);
     }
 }
 
@@ -62,12 +63,12 @@ void execute(char **args){
  *  Function getNthCommand
  *
  *   Summary : Returns the argument array of the Nth history object
- *   Input   : A stack of command history objects and an integer n, denoting the
- *             Nth args array to return
+ *   Input   : s - a stack of command history objects
+ *             n - an integer denoting the Nth args array to return
  *   Returns : an argument array
  */
 char ** getNthCommand(stack *s, int n){
-    if(isEmpty(s) || n > s->numNodes)return NULL;
+    if(isEmpty(s) || n > s->numNodes) return NULL;
     stackNode *curr = s->head;
     for(size_t i = 0; i < s->numNodes-n; i++){
         if(!curr) return NULL;
@@ -112,41 +113,54 @@ int main(){
             printf("osh>");
             fflush(stdout);
             fgets(input, BUFFER_SIZE, stdin);
-        } while(input[0] == '\n');
+        } while(input[0] == '\n'); /* Handles case where user enters nothing */
+
+        /* Check if user entered a '&' to run command in the background */
+        int backgroundFlag = 0;
+        if(input[strlen(input)-2] == '&') backgroundFlag = 1;
 
         /* Parse user input and store arguments in args array */
-        split(input, args, " \n");
+        split(input, args, " &\n");
 
         /* If user enters exit, terminate program */
         if(strcmp(args[0],"exit") == 0) break;
+
+        /* Prints the users command history */
         else if(strcmp(args[0], "history") == 0) {
             print(historyStack);
             push(historyStack, args);
-        }
-        /* Executes !! or !# commands */
-        else if(strstr(args[0], "!") != NULL && strlen(args[0]) <= 2){
-            if(!isEmpty(historyStack)) {
-                /* execute last command */
-                if (args[0][1] == '!') {
-                    execute(historyStack->head->args);
-                    push(historyStack, historyStack->head->args);
-                }
-                /* execute the Nth command */
-                else {
-                    char **nthCommand = getNthCommand(historyStack, args[0][1] - '0');
-                    execute(nthCommand);
-                    push(historyStack, nthCommand);
-                }
-            } else fprintf(stderr, "Command doesn't exist in history\n");
         }
         /* Clears the history stack */
         else if(strcmp(args[0], "clear") == 0) {
             popAll(historyStack);
             push(historyStack, args);
         }
+
+        /* Executes !! or !# commands */
+        else if(strstr(args[0], "!") != NULL && strlen(args[0]) <= 2){
+
+            if(!isEmpty(historyStack)) {
+                /* execute last command */
+                if (args[0][1] == '!') {
+                    execute(historyStack->head->args, backgroundFlag);
+                    push(historyStack, historyStack->head->args);
+                }
+                /* execute the Nth command */
+                else {
+                    char **nthCommand = getNthCommand(historyStack, args[0][1] - '0');
+                    if(nthCommand != NULL) {
+                        execute(nthCommand, backgroundFlag);
+                        push(historyStack, nthCommand);
+                    } else
+                        fprintf(stderr, "No such command in history\n");
+                }
+            } else
+                fprintf(stderr, "No commands in history\n");
+        }
+
         /* Execute command normally */
         else{
-            execute(args);
+            execute(args, backgroundFlag);
             push(historyStack, args);
         }
 
