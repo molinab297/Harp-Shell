@@ -1,5 +1,5 @@
-#ifndef HARP_SHELL_COMMON_H
-#define HARP_SHELL_COMMON_H
+#ifndef OSH_COMMON_H
+#define OSH_COMMON_H
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -11,4 +11,4 @@
 #define BUFFER_SIZE 30
 
 
-#endif //HARP_SHELL_COMMON_H
+#endif //OSH_COMMON_H

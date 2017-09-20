@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/Blake/ClionProjects/Osh/common.h
+sys/types.h
+-
+stdio.h
+-
+unistd.h
+-
+memory.h
+-
+stdlib.h
+-
+
+/Users/Blake/ClionProjects/Osh/main.c
+common.h
+/Users/Blake/ClionProjects/Osh/common.h
+stack.h
+/Users/Blake/ClionProjects/Osh/stack.h
+
+/Users/Blake/ClionProjects/Osh/stack.h
+stdbool.h
+-
+common.h
+/Users/Blake/ClionProjects/Osh/common.h
+

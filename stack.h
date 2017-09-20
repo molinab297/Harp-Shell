@@ -6,8 +6,8 @@
  *
  *  Stack Class: used for displaying shell command history
  */
-#ifndef HARP_SHELL_STACK_H
-#define HARP_SHELL_STACK_H
+#ifndef OSH_STACK_H
+#define OSH_STACK_H
 
 #include <stdbool.h>
 #include "common.h"
@@ -153,4 +153,4 @@ void print(stack *s){
     }
 }
 
-#endif //HARP_SHELL_STACK_H
+#endif //OSH_STACK_H

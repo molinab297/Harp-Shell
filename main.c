@@ -84,14 +84,74 @@ char ** getNthCommand(stack *s, int n){
  *   Input   : A pointer to an array of strings
  *   Returns : None
  */
-void clearArgumentAr(char **args){
+void clearArgumentAr(char **args, int size){
     /* Clear argument array for next command */
-    for(int i = 0; i < MAX_ARGUMENTS; i++){
+    for(int i = 0; i < size; i++){
         if(args[i] != NULL) {
             free(args[i]);
             args[i] = NULL;
         }
     }
+}
+
+/*  -----------------------------------------------------------------------------
+ *  Function loadShellHistory
+ *
+ *   Summary : loads command history from a text file
+ *   Input   : history_stack - a pointer to stack object
+ *             outputFileName - name of text file to load history from
+ *   Returns : none
+ */
+void loadShellHistory(stack *history_stack, char outputFileName[]){
+    if(!history_stack) return;
+
+    FILE *file = fopen(outputFileName, "r");
+    if(!file) return;
+
+    char *args[MAX_ARGUMENTS] = {NULL};
+    char line[BUFFER_SIZE];
+
+    while(fgets(line, sizeof(line), file)){
+        /* read history line by line */
+        split(line, args, " &\n");
+        /* push command onto stack */
+        push(history_stack, args);
+        /* clear argument array for the next command */
+        clearArgumentAr(args, MAX_ARGUMENTS);
+    }
+
+    fclose(file);
+}
+
+
+/*  -----------------------------------------------------------------------------
+ *  Function saveShellHistory
+ *
+ *   Summary : saves command history from a text file
+ *   Input   : history_stack - a pointer to stack object
+ *             outputFileName - name of text file to save history to
+ *   Returns : none
+ */
+void saveShellHistory(stack *history_stack, char outputFileName[]){
+    if(!history_stack) return;
+
+    FILE *file = fopen(outputFileName, "w");
+    if(!file){
+        fprintf(stderr, "Failed to save file");
+        exit(EXIT_FAILURE);
+    }
+
+    stackNode *curr = history_stack->head;
+    while(curr){
+        for(int i = 0; i < MAX_ARGUMENTS; i++){
+            if(curr->args[i] != NULL)
+                fprintf(file, "%s ", curr->args[i]); /* Write command argument to file */
+        }
+        fprintf(file, "\n");
+        curr = curr->next;
+    }
+
+    fclose(file);
 }
 
 
@@ -100,9 +160,15 @@ void clearArgumentAr(char **args){
  */
 int main(){
 
-    char *args[MAX_ARGUMENTS] = {NULL}; /* command line arguments */
-    stack *historyStack = (stack*)malloc(sizeof(stack)); /* Stack for shell command history */
+    char history_log[] = "history.txt";
+    char *args[MAX_ARGUMENTS] = {NULL};
+
+    /* Create and initialize stack for shell command history */
+    stack *historyStack = (stack*)malloc(sizeof(stack));
     initializeStack(historyStack);
+
+    /* Load shell history from text file */
+    loadShellHistory(historyStack, history_log);
 
     /* User exits shell by typing 'exit' */
     while (1) {
@@ -125,18 +191,16 @@ int main(){
         /* If user enters exit, terminate program */
         if(strcmp(args[0],"exit") == 0) break;
 
-        /* Prints the users command history */
+            /* Prints the users command history */
         else if(strcmp(args[0], "history") == 0) {
             print(historyStack);
             push(historyStack, args);
         }
-        /* Clears the history stack */
-        else if(strcmp(args[0], "clear") == 0) {
+            /* Clears the history stack */
+        else if(strcmp(args[0], "clear") == 0)
             popAll(historyStack);
-            push(historyStack, args);
-        }
 
-        /* Executes !! or !# commands */
+            /* Executes !! or !# commands */
         else if(strstr(args[0], "!") != NULL && strlen(args[0]) <= 2){
 
             if(!isEmpty(historyStack)) {
@@ -145,7 +209,7 @@ int main(){
                     execute(historyStack->head->args, backgroundFlag);
                     push(historyStack, historyStack->head->args);
                 }
-                /* execute the Nth command */
+                    /* execute the Nth command */
                 else {
                     char **nthCommand = getNthCommand(historyStack, args[0][1] - '0');
                     if(nthCommand != NULL) {
@@ -158,15 +222,18 @@ int main(){
                 fprintf(stderr, "No commands in history\n");
         }
 
-        /* Execute command normally */
+            /* Execute command normally */
         else{
             execute(args, backgroundFlag);
             push(historyStack, args);
         }
 
         /* Clears argument array for next user input */
-        clearArgumentAr(args);
+        clearArgumentAr(args, MAX_ARGUMENTS);
     }
+
+    /* Save shell history to a text file */
+    saveShellHistory(historyStack, history_log);
 
     /* Delete command history */
     freeStack(&historyStack);
