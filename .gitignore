@@ -10,6 +10,8 @@ CMakeLists.txt
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+.idea/*
+cmake-build-debug/*
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
