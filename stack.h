@@ -108,7 +108,7 @@ void pop(stack *s){
  *   Returns : none
  */
 void popAll(stack *s){
-    while(!isEmpty(s)){ pop(s); }
+    while(!isEmpty(s)) pop(s);
 }
 
 /*  -----------------------------------------------------------------------------

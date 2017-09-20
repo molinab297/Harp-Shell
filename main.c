@@ -123,11 +123,30 @@ void loadShellHistory(stack *history_stack, char outputFileName[]){
     fclose(file);
 }
 
+/*  -----------------------------------------------------------------------------
+ *  Function saveShellHistoryRecur
+ *
+ *   Summary : writes command history to a text file
+ *   Input   : head - a pointer to the top of a stack object
+ *             file - a pointer to a file object
+ *   Returns : none
+ */
+void saveShellHistoryRecur(stackNode *head, FILE *file){
+	if(head != NULL){
+		saveShellHistoryRecur(head->next, file);
+		for(int i = 0; i < MAX_ARGUMENTS; i++){
+			if(head->args[i] != NULL)
+				fprintf(file, "%s ", head->args[i]);
+		} fprintf(file, "\n");
+	}
+}
 
 /*  -----------------------------------------------------------------------------
  *  Function saveShellHistory
  *
- *   Summary : saves command history from a text file
+ *   Summary : Prepares a file for writing command history to, and then calls a
+ 			   recursive function to write the command history to the file.
+ 			   (See @saveShellHistoryRecur).
  *   Input   : history_stack - a pointer to stack object
  *             outputFileName - name of text file to save history to
  *   Returns : none
@@ -141,16 +160,8 @@ void saveShellHistory(stack *history_stack, char outputFileName[]){
         exit(EXIT_FAILURE);
     }
 
-    stackNode *curr = history_stack->head;
-    while(curr){
-        for(int i = 0; i < MAX_ARGUMENTS; i++){
-            if(curr->args[i] != NULL)
-                fprintf(file, "%s ", curr->args[i]); /* Write command argument to file */
-        }
-        fprintf(file, "\n");
-        curr = curr->next;
-    }
-
+    saveShellHistoryRecur(history_stack->head, file);
+    
     fclose(file);
 }
 
@@ -192,10 +203,9 @@ int main(){
         if(strcmp(args[0],"exit") == 0) break;
 
             /* Prints the users command history */
-        else if(strcmp(args[0], "history") == 0) {
+        else if(strcmp(args[0], "history") == 0)
             print(historyStack);
-            push(historyStack, args);
-        }
+   
             /* Clears the history stack */
         else if(strcmp(args[0], "clear") == 0)
             popAll(historyStack);
