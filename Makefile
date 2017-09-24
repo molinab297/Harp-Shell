@@ -1,5 +1,5 @@
 CXX = gcc
-FILES = main.o 
+FILES = main.o
 
 program: $(FILES)
 	$(CXX) $(FILES) -o osh
@@ -10,4 +10,3 @@ main.o : main.c
 .PHONY: clean
 clean:
 	rm *.o osh
-
