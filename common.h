@@ -1,3 +1,9 @@
+/* Author: Blake Molina
+ * Assignment: Project 3 - UNIX Shell & History Feature
+ * CWID: 890198401
+ * Class: CPSC-351 Section 2
+ * Date: 19 September, 2017
+ */
 #ifndef OSH_COMMON_H
 #define OSH_COMMON_H
 

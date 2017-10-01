@@ -22,8 +22,7 @@ void split(char input[], char **args, char *delimiters){
     for (char *p = strtok(input,delimiters); p != NULL; p = strtok(NULL,delimiters)) {
         /* Store returned value from strtok() into argument array */
         char *token = strdup(p);
-        args[index] = token;
-        ++index;
+        args[index++] = token;
     }
 }
 
@@ -55,7 +54,9 @@ void execute(char **args, int background_flag){
     }
     else{ /* parent process */
         /* wait for child process to finish */
-        if(background_flag == 0) wait(NULL);
+        if(background_flag == 0) {
+            wait(NULL);
+        }
     }
 }
 
@@ -137,7 +138,8 @@ void saveShellHistoryRecur(stackNode *head, FILE *file){
 		for(int i = 0; i < MAX_ARGUMENTS; i++){
 			if(head->args[i] != NULL)
 				fprintf(file, "%s ", head->args[i]);
-		} fprintf(file, "\n");
+		}
+        fprintf(file, "\n");
 	}
 }
 
@@ -181,6 +183,16 @@ int main(){
     /* Load shell history from text file */
     loadShellHistory(historyStack, history_log);
 
+    printf("---------------------------------------------------------------------------\n");
+    printf("Welcome to the Osh Shell!\n\n"
+           "Type 'history' to view the shell history\n"
+           "Type '!!' to execute the most recent command\n"
+           "Type '!n' where n is the nth command\n"
+           "Enter your command followed with an '&' to run it as a background process\n"
+           "Type 'clear' to clear the shell history\n"
+           "Type 'exit' to exit the Osh shell.\n");
+    printf("---------------------------------------------------------------------------\n\n");
+
     /* User exits shell by typing 'exit' */
     while (1) {
 
@@ -194,7 +206,9 @@ int main(){
 
         /* Check if user entered a '&' to run command in the background */
         int backgroundFlag = 0;
-        if(input[strlen(input)-2] == '&') backgroundFlag = 1;
+        if(input[strlen(input)-2] == '&'){
+            backgroundFlag = 1;
+        }
 
         /* Parse user input and store arguments in args array */
         split(input, args, " &\n");
@@ -203,12 +217,14 @@ int main(){
         if(strcmp(args[0],"exit") == 0) break;
 
             /* Prints the users command history */
-        else if(strcmp(args[0], "history") == 0)
+        else if(strcmp(args[0], "history") == 0) {
             print(historyStack);
+        }
    
             /* Clears the history stack */
-        else if(strcmp(args[0], "clear") == 0)
+        else if(strcmp(args[0], "clear") == 0) {
             popAll(historyStack);
+        }
 
             /* Executes !! or !# commands */
         else if(strstr(args[0], "!") != NULL && strlen(args[0]) <= 2){
@@ -225,11 +241,13 @@ int main(){
                     if(nthCommand != NULL) {
                         execute(nthCommand, backgroundFlag);
                         push(historyStack, nthCommand);
-                    } else
+                    } else {
                         fprintf(stderr, "No such command in history\n");
+                    }
                 }
-            } else
+            } else {
                 fprintf(stderr, "No commands in history\n");
+            }
         }
 
             /* Execute command normally */

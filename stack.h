@@ -25,7 +25,9 @@ struct stack{
     size_t numNodes;
 };
 
-bool isEmpty(stack *s){ return (s == NULL || s->head == NULL); }
+bool isEmpty(stack *s){
+    return (s == NULL || s->head == NULL);
+}
 
 /*  -----------------------------------------------------------------------------
  *  Function initializeStack
@@ -90,7 +92,8 @@ void push(stack *s, char *args[]){
  *   Returns : none
  */
 void pop(stack *s){
-    if(isEmpty(s)) return;
+    if(isEmpty(s))
+        return;
     stackNode *delNode = s->head;
     /* Frees memory from the argument array */
     for(int i = 0; i < MAX_ARGUMENTS; i++){ if(s->head->args[i] != NULL) free(s->head->args[i]); }
@@ -119,7 +122,8 @@ void popAll(stack *s){
  *   Returns : none
  */
 void freeStack(stack **s){
-    if(!s || !*s) return;
+    if(!s || !*s)
+        return;
     popAll(*s);
     free(*s);
     *s = NULL;
@@ -139,7 +143,8 @@ void freeStack(stack **s){
  *   Returns : none
  */
 void print(stack *s){
-    if(isEmpty(s)) return;
+    if(isEmpty(s))
+        return;
     stackNode *curr = s->head;
     size_t count = s->numNodes;
     while(curr){
@@ -147,7 +152,8 @@ void print(stack *s){
         for(int i = 0; i < MAX_ARGUMENTS; i++) {
             if (curr->args[i] != NULL)
                 printf("%s ", curr->args[i]);
-        } printf("\n");
+        }
+        printf("\n");
         --count;
         curr = curr->next;
     }
